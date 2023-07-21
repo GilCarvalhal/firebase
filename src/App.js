@@ -1,11 +1,12 @@
-import { db } from "./firebaseConnection";
-import { doc, setDoc, collection, addDoc, getDoc, getDocs } from "firebase/firestore";
-import "./app.css";
+import { addDoc, collection, doc, getDocs, updateDoc } from "firebase/firestore";
 import { useState } from "react";
+import "./app.css";
+import { db } from "./firebaseConnection";
 
 function App() {
   const [titulo, setTitulo] = useState('');
   const [autor, setAutor] = useState('');
+  const [idPost, setIdPost] = useState('');
 
   const [posts, setPosts] = useState([]);
 
@@ -70,11 +71,33 @@ function App() {
       })
   }
 
+  async function editarPost() {
+    const docRef = doc(db, "posts", idPost)
+    await updateDoc(docRef, {
+      titulo: titulo,
+      autor: autor,
+    })
+      .then(() => {
+        console.log("POST ATUALIZADO!");
+        setIdPost("");
+        setTitulo("");
+        setAutor("");
+      })
+      .catch(() => {
+        console.log("ERRO AO ATUALIZAR O POST!");
+      })
+  }
+
   return (
     <div>
       <h1>ReactJS + Firebase</h1>
 
       <div className="container">
+        <label>
+          ID do Post
+        </label>
+        <input placeholder="Digite o ID do post" value={idPost} onChange={(e) => setIdPost(e.target.value)} /> <br />
+
         <label>
           Título:
         </label>
@@ -86,12 +109,15 @@ function App() {
         <input type="text" placeholder="Autor do post" value={autor} onChange={(e) => setAutor(e.target.value)} /> <br />
 
         <button onClick={handleAdd}>Cadastrar</button> <br />
-        <button onClick={buscarPost}>Buscas posts</button>
+        <button onClick={buscarPost}>Buscar posts</button> <br />
+
+        <button onClick={editarPost}>Atualizar post</button>
 
         <ul>
           {posts.map((post) => {
             return (
               <li key={post.id}>
+                <strong>ID: {post.id}</strong> <br />
                 <span>Titulo: {post.titulo}</span> <br />
                 <span>Autor: {post.autor}</span> <br /> <br />
               </li>
