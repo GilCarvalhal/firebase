@@ -1,18 +1,23 @@
 import { useState, useEffect } from "react";
 import { addDoc, collection, doc, getDocs, updateDoc, deleteDoc, onSnapshot } from "firebase/firestore";
 import "./app.css";
-import { db } from "./firebaseConnection";
+import { db, auth } from "./firebaseConnection";
+
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 function App() {
   const [titulo, setTitulo] = useState('');
   const [autor, setAutor] = useState('');
   const [idPost, setIdPost] = useState('');
 
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     async function loadPosts() {
-      const unsub = onSnapshot(collection(db, "posts"), (snapshot) => {
+      onSnapshot(collection(db, "posts"), (snapshot) => {
         let listaPost = [];
 
         snapshot.forEach((doc) => {
@@ -118,11 +123,47 @@ function App() {
       })
   }
 
+  async function novoUsuario() {
+    await createUserWithEmailAndPassword(auth, email, senha)
+      .then(() => {
+        console.log("CADASTRADO COM SUCESSO!");
+        setEmail("");
+        setSenha("");
+      })
+      .catch((error) => {
+        if (error.code === "auth/weak-password") {
+          alert("Senha muito fraca - mínimo de 6 dígitos");
+        } else if (error.code === "auth/email-already-in-use") {
+          alert("Email já existe");
+        }
+      })
+  }
+
   return (
     <div>
       <h1>ReactJS + Firebase</h1>
 
       <div className="container">
+        <h2>Usuários</h2>
+        <label>E-mail</label>
+        <input value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Digite seu email"
+        />
+        <label>Senha</label>
+        <input value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+          placeholder="Informe sua senha"
+        /> <br />
+
+        <button onClick={novoUsuario}>Cadastrar</button>
+      </div>
+
+      <br />
+      <hr />
+
+      <div className="container">
+        <h2>POSTS</h2>
         <label>
           ID do Post
         </label>
