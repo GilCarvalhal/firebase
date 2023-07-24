@@ -3,7 +3,7 @@ import { addDoc, collection, doc, getDocs, updateDoc, deleteDoc, onSnapshot } fr
 import "./app.css";
 import { db, auth } from "./firebaseConnection";
 
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
 
 function App() {
   const [titulo, setTitulo] = useState('');
@@ -35,6 +35,27 @@ function App() {
       })
     }
     loadPosts();
+  }, [])
+
+  useEffect(() => {
+    async function checkLogin() {
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          // Se tem usuario logado, ele entra aqui.
+          console.log(user);
+          setUser(true);
+          setUserDetail({
+            uid: user.uid,
+            email: user.email,
+          })
+        } else {
+          // Não possui nenhum user logado.
+          setUser(false);
+          setUserDetail({});
+        }
+      })
+    }
+    checkLogin();
   }, [])
 
   async function handleAdd() {
